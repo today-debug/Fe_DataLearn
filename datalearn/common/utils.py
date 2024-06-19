@@ -1,6 +1,7 @@
 import logging
 
-def get_logger(*, name: str = "DataLearn")->logging.Logger:
+
+def get_logger(*, name: str = "DataLearn") -> logging.Logger:
     logger = logging.getLogger(name)
 
     if getattr(logger, "_init_done__", None):
