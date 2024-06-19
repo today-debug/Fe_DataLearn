@@ -1,0 +1,4 @@
+numpy
+pytype
+black ~= 20.8b1
+isort == 5.9.2
