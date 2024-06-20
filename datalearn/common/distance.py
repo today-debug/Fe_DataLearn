@@ -1,4 +1,5 @@
 import typing as t
+from queue import PriorityQueue
 
 import numpy as np
 from utils import get_logger
@@ -41,3 +42,38 @@ def cosine(x: np.ndarray, y: np.ndarray):
 def correlation_distance(x: np.ndarray, y: np.ndarray):
     check_input(x, y)
     return 1 - np.corrcoef(x, y)[0][1]
+
+
+def nearest(dataset: np.ndarray,
+            k: int = 1,
+            target: int = 0,
+            func: t.Callable = minkowski_distance) -> np.ndarray:
+    """
+        k: 返回最邻近点的数量
+        target: 聚类中心点在data数组中的下标
+        func: 距离计算方式
+    """
+    if k > len(dataset) - 1:
+        __logger.error(
+            "k is larger than len(dataset)!!!\nPlease check your input.")
+    if k == len(dataset) - 1:
+        return np.concatenate((dataset[:target], dataset[target + 1:]))
+
+    center = dataset[target]
+    pq: PriorityQueue[tuple[int, float]] = PriorityQueue()
+    for i in range(0, len(dataset)):
+        if i == target:
+            continue
+        dis_idx: tuple = (func(dataset[i], center), i)
+        pq.put(dis_idx)
+
+    k_nearest_dataset: list[np.ndarray] = []
+    for i in range(0, k):
+        k_nearest_dataset.append(dataset[pq.get()[1]])
+
+    return np.array(k_nearest_dataset)
+
+
+# dataset = np.array([[1,3],[2,4],[7,5],[10,3],[2,4]])
+# res = nearest(dataset,k = 4)
+# import pdb;pdb.set_trace()
