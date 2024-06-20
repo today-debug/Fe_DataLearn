@@ -2,7 +2,8 @@ import typing as t
 from queue import PriorityQueue
 
 import numpy as np
-from utils import get_logger
+
+from .utils import get_logger
 
 __logger = get_logger(name=__file__)
 
@@ -47,11 +48,15 @@ def correlation_distance(x: np.ndarray, y: np.ndarray):
 def nearest(dataset: np.ndarray,
             k: int = 1,
             target: int = 0,
-            func: t.Callable = minkowski_distance) -> np.ndarray:
+            func: t.Callable = minkowski_distance
+            ) -> list[tuple[np.ndarray, int, float]]:
     """
         k: 返回最邻近点的数量
         target: 聚类中心点在data数组中的下标
         func: 距离计算方式
+
+        return:
+            list[(data,index,distance)]
     """
     if k > len(dataset) - 1:
         __logger.error(
@@ -67,11 +72,12 @@ def nearest(dataset: np.ndarray,
         dis_idx: tuple = (func(dataset[i], center), i)
         pq.put(dis_idx)
 
-    k_nearest_dataset: list[np.ndarray] = []
+    k_nearest_dataset: list = []
     for i in range(0, k):
-        k_nearest_dataset.append(dataset[pq.get()[1]])
+        data = pq.get()
+        k_nearest_dataset.append((dataset[data[1]], data[1], data[0]))
 
-    return np.array(k_nearest_dataset)
+    return k_nearest_dataset
 
 
 # dataset = np.array([[1,3],[2,4],[7,5],[10,3],[2,4]])
