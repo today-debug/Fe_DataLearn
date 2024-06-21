@@ -10,8 +10,10 @@ from datalearn.common import distance
 
 def LOF(dataset: np.ndarray,
         k: int = 2,
-        func: t.Callable = distance.chebyshev_distance):
+        func: t.Callable = distance.minkowski_distance):
     """
+        计算方法参考: https://cloud.tencent.com/developer/article/2414156
+
         Local Outlier Factor  用于检测局部离群点
         k: 参数，决定计算的最近邻点个数
         func: 距离计算方式

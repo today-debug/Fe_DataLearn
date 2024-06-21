@@ -16,8 +16,8 @@ def check_input(x: np.ndarray, y: np.ndarray):
 
 def minkowski_distance(x: np.ndarray, y: np.ndarray, p: int = 2):
     """
-        if p = 1,it is equivalent to Manhattan_Distance
-        if p = 2,it is equivalent to Euclidean_Distance
+        if p = 1,it is equivalent to Manhattan_Distance;
+        if p = 2,it is equivalent to Euclidean_Distance;
         if p -> ∞,it is equivalent to Chebyshev_Distance
     """
     check_input(x, y)
