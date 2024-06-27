@@ -1,14 +1,20 @@
+from typing import Optional
+
 import numpy as np
-from common.utils import get_logger
+from common.utils import get_logger, retry
 
 _logger = get_logger("Frequent_Items")
 
 
-def get_frequent_items(dataset, thres: int):
-    pass
+def frequent_item(dataset: list[list], thres: int, conf: float,
+                  method: Optional[str]):
+    if method.capitalize() == "SAMPLE":
+        _, _, sample_frequent_items = sample(dataset, thres)
+        rules = get_rules(sample_frequent_items, conf)
+        return rules
 
 
-def a_prior(dataset: list[list], thres: int):
+def get_frequent_items(dataset: list[list], thres: int):
     one_tuple: dict = {}
     for data in dataset:
         for i in data:
@@ -93,29 +99,36 @@ def get_rules(frequent_items: dict[list, float], conf: float):
     return rules
 
 
+@retry(count=3, delay=5)
 def sample(dataset: list[list], thres: int, sampling_ratio: float) -> tuple:
     """
         sampling_ratio:采样比例
-        return: (采样数据,采样数据频繁项阈值)
+        return: (采样数据,采样数据频繁项阈值,采样数据频繁项集)
     """
     from random import random as rd
-    sampling_dataset = []
+    sample_dataset = []
     for data in dataset:
         if rd() > sampling_ratio:
             continue
-        sampling_dataset.append(data)
+        sample_dataset.append(data)
 
-    thres = thres * sampling_ratio * 0.8  #0.8是经验系数，可以更改
-    return (sampling_dataset, thres)
+    sample_thres = thres * sampling_ratio * 0.8  #0.8是经验系数，可以更改
+    sample_frequent_items = get_frequent_items(sample_dataset, sample_thres)
+    assert sample_check(dataset, thres, sample_frequent_items)
+    return (sample_dataset, sample_thres, sample_frequent_items)
 
 
-def sample_check(dataset: list[list], sample_frequent_item: dict,
-                 thres: int) -> bool:
+def sample_check(dataset: list[list], thres: int,
+                 sample_frequent_item: dict) -> bool:
     """
         检查采样数据频繁集是否与原数据集一致
         1. sample有的,原数据集也得有
         2. 原数据集有的，sample不一定有
         总结：可以少，但不能多
+
+        **param
+        sample_XXX是采样数据的参数
+        其余均为原始数据的参数
     """
     frequent_items: dict = {}
     for data in dataset:
