@@ -1,4 +1,7 @@
 import numpy as np
+from common.utils import get_logger
+
+_logger = get_logger("Frequent_Items")
 
 
 def get_frequent_items(dataset, thres: int):
@@ -88,3 +91,42 @@ def get_rules(frequent_items: dict[list, float], conf: float):
                 rules.append((val, tval))
 
     return rules
+
+
+def sample(dataset: list[list], thres: int, sampling_ratio: float) -> tuple:
+    """
+        sampling_ratio:采样比例
+        return: (采样数据,采样数据频繁项阈值)
+    """
+    from random import random as rd
+    sampling_dataset = []
+    for data in dataset:
+        if rd() > sampling_ratio:
+            continue
+        sampling_dataset.append(data)
+
+    thres = thres * sampling_ratio * 0.8  #0.8是经验系数，可以更改
+    return (sampling_dataset, thres)
+
+
+def sample_check(dataset: list[list], sample_frequent_item: dict,
+                 thres: int) -> bool:
+    """
+        检查采样数据频繁集是否与原数据集一致
+        1. sample有的,原数据集也得有
+        2. 原数据集有的，sample不一定有
+        总结：可以少，但不能多
+    """
+    frequent_items: dict = {}
+    for data in dataset:
+        for key in sample_frequent_item.keys():
+            if len(set(key) | set(data)) == len(data):
+                cnt = frequent_items.get(key) if frequent_items.get(key) else 0
+                frequent_items.update({key: (cnt + 1)})
+
+    for key, item in frequent_items.items():
+        if item < thres:
+            _logger.warning(
+                "Sampling Frequent Items in infrequent. Please Retry!")
+            return False
+    return True
