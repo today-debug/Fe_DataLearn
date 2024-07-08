@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from common.utils import get_logger, retry
 
-_logger = get_logger("Frequent_Items")
+_logger = get_logger(name="Frequent_Items")
 
 
 def frequent_item(dataset: list[list], thres: int, conf: float,
