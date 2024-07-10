@@ -2,12 +2,12 @@
     LSH 3 steps
     1. shingling
     2. min-hashing
-    3. divide row * band
+    3. hash into many buckets
 """
 import random
 from copy import deepcopy
 from math import floor, sqrt
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from datalearn.common.utils import get_logger
 
@@ -101,11 +101,72 @@ def min_hash(boolean_set: list, permute_times: Optional[int] = None):
     return signature_list
 
 
-# documents = ["append", "aboard", "docker", "jokers", "locker", "banana"]
+def divide_into_bands(boolean_set: list, b: int, s: float, target: int):
+    """
+        divide boolean_set into b bands
+        each band has r rows
+
+        only if all bands are dissimilar,origin signature pairs are regarded as dissimilar.
+
+        **params**
+            b: number of bands
+            s: threshold of similarity
+            target: 
+            boolean_set: signature of all document
+    """
+    set_len = len(boolean_set[0])
+    r = floor(set_len / b)
+    for i in range(b):
+        r_range = [r * i, min(r * (i + 1), set_len)]
+    return 0
+
+
+def hash_into_buckets(min_hash_set: list) -> dict[str, list]:
+    hash_signature: dict[str, list] = {}
+    for i in range(len(min_hash_set[0])):
+        min_hash = []
+        for permute in min_hash_set:
+            min_hash.append(permute[i])
+
+        signature_str = ''.join(chr(i % 127) for i in min_hash)
+        if signature_str in hash_signature.keys():
+            val = hash_signature[signature_str]
+            val.append(i)
+            hash_signature.update({signature_str: val})
+        else:
+            hash_signature.update({signature_str: [i]})
+
+    return hash_signature
+
+
+def find_candidate_pairs(hash_signature: dict, min_hash_set: list, target: int,
+                         s: float):
+    target_key = []
+    for permute in min_hash_set:
+        target_key.append(permute[target])
+    candidate_items = []
+
+    for k, v in hash_signature.items():
+        k = [ord(c) for c in k]
+        cnt = 0
+        for i in range(len(target_key)):
+            if k[i] == target_key[i]:
+                cnt += 1
+
+        prob = cnt / len(target_key)
+        if prob > s:
+            candidate_items.extend(v)
+
+    return candidate_items
+
+
+# documents = ["append", "aboard", "docker", "jokers", "locker","docter" ,"banana","appearance","appearence"]
 # document2 = [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [1, 5, 3, 6, 7],
 #              [2, 4, 6, 8, 10]]
 # shingling_set = shingling(documents, 2)
 # boolean_set = convert_shingling_to_boolean(shingling_set)
 # min_hash_set = min_hash(boolean_set)
+# hash_signature = hash_into_buckets(min_hash_set)
+# candidate_keys = find_candidate_pairs(hash_signature,min_hash_set,2,0.4)
 
-# print(cal_sim(boolean_set[2], boolean_set[4]))
+# # print(cal_sim(boolean_set[2], boolean_set[4]))
